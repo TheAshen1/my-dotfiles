@@ -1,6 +1,7 @@
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
+vim.opt.shell = "/usr/bin/bash"
 -- [[ Basic options ]]
 vim.opt.number = true
 

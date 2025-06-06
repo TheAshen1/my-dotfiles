@@ -15,6 +15,7 @@ return {
             "query",
             "vim",
             "vimdoc",
+            "sql",
         },
         auto_install = true,
         highlight = { enable = true },

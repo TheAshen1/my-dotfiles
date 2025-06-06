@@ -19,7 +19,7 @@ return {
             lua = { "stylua" },
             c = { "clang-format" },
             json = { "clang-format" },
-            cs = { "csharpier" },
+            -- cs = { "csharpier" },
         },
         formatters = {
             csharpier = {

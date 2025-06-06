@@ -47,7 +47,6 @@ return {
                         vim.lsp.buf.declaration,
                         { buffer = event.buf, desc = "Goto Declaration" }
                     )
-
                     vim.keymap.set(
                         "n",
                         "<leader>gr",
@@ -105,10 +104,6 @@ return {
                             end,
                         })
                     end
-
-                    -- if client:supports_method(vim.lsp.protocol.Methods.textDocument_completion) then
-                    --     vim.lsp.completion.enable(true, client.id, event.buf, { autotrigger = true })
-                    -- end
                 end,
             })
 
@@ -131,13 +126,54 @@ return {
 
             vim.lsp.enable("clangd")
 
+            vim.lsp.config("roslyn", {
+                on_attach = function()
+                    print("Attached roslyn...")
+                end,
+                settings = {
+                    ["csharp|background_analysis"] = {
+                        background_analysis = {
+                            dotnet_analyzer_diagnostics_scope = "openFiles",
+                            dotnet_compiler_diagnostics_scope = "openFiles",
+                        },
+                    },
+                    ["csharp|inlay_hints"] = {
+                        csharp_enable_inlay_hints_for_implicit_object_creation = true,
+                        csharp_enable_inlay_hints_for_implicit_variable_types = true,
+                    },
+                    ["csharp|code_lens"] = {
+                        dotnet_enable_references_code_lens = true,
+                    },
+                },
+            })
+
+            vim.lsp.enable("roslyn")
+
+            vim.api.nvim_create_autocmd({ "InsertLeave" }, {
+                pattern = "*",
+                callback = function()
+                    local clients = vim.lsp.get_clients({ name = "roslyn" })
+                    if not clients or #clients == 0 then
+                        return
+                    end
+
+                    local buffers = vim.lsp.get_buffers_by_client_id(clients[1].id)
+                    for _, buf in ipairs(buffers) do
+                        vim.lsp.util._refresh("textDocument/diagnostic", { bufnr = buf })
+                    end
+                end,
+            })
+
             vim.diagnostic.config({
                 severity_sort = true,
                 float = {
                     source = "if_many",
                 },
                 underline = {
-                    severity = vim.diagnostic.severity.ERROR,
+                    severity = {
+                        vim.diagnostic.severity.ERROR,
+                        vim.diagnostic.severity.WARN,
+                    },
                 },
                 signs = {
                     text = {
@@ -170,9 +206,7 @@ return {
         ---@module 'roslyn.config'
         ---@type RoslynNvimConfig
         opts = {
-            ---@type vim.lsp.ClientConfig
-            -- your configuration comes here; leave empty for default settings
-            -- NOTE: You must configure `cmd` in `config.cmd` unless you have installed via mason
+            lock_target = true,
         },
     },
 }
